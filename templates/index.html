@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloudOps — NOC Dashboard</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <script src="/static/js/dashboard.js" defer></script>
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- ── Connection banner ─────────────────────────────────────────── -->
+  <div id="conn-banner">
+    ⚠ CONNECTION LOST — attempting to reconnect…
+  </div>
+
+  <!-- ── Header ───────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-mark">⬡</div>
+      <div>
+        <div class="header-title">CloudOps Infrastructure Dashboard</div>
+        <div class="header-subtitle">Network Operations Centre · ec2-prod-01</div>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="live-pill" id="live-pill">
+        <span class="live-dot" id="live-dot"></span>
+        <span id="live-text">LIVE</span>
+      </div>
+    </div>
+
+    <div class="header-meta">
+      <div class="meta-item">
+        <span class="meta-label">Host</span>
+        <span class="meta-value" id="header-hostname">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">OS</span>
+        <span class="meta-value" id="header-os">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Public IP</span>
+        <span class="meta-value" id="header-ip">—</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Section 1: Real-Time Charts ─────────────────────────────── -->
+  <div class="section-header">
+    <span class="section-icon">📈</span>
+    <span class="section-title">Real-Time Performance Graphs</span>
+  </div>
+
+  <div class="charts-grid">
+
+    <!-- CPU Chart -->
+    <div class="card chart-card">
+      <div class="card-header">
+        <span class="card-title">⚡ CPU Usage</span>
+        <span class="chart-stat color-blue" id="cpu-stat">—</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chart-cpu"></canvas>
+      </div>
+    </div>
+
+    <!-- Memory Chart -->
+    <div class="card chart-card">
+      <div class="card-header">
+        <span class="card-title">🧠 Memory Usage</span>
+        <span class="chart-stat color-ok" id="mem-stat">—</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chart-mem"></canvas>
+      </div>
+    </div>
+
+    <!-- Disk Chart -->
+    <div class="card chart-card">
+      <div class="card-header">
+        <span class="card-title">💾 Disk Usage</span>
+        <span class="chart-stat color-warning" id="disk-stat">—</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chart-disk"></canvas>
+      </div>
+    </div>
+
+    <!-- Network Chart -->
+    <div class="card chart-card">
+      <div class="card-header">
+        <span class="card-title">📡 Network I/O</span>
+        <span class="chart-stat color-cyan" id="net-in-stat">—</span>
+      </div>
+      <div class="chart-body">
+        <canvas id="chart-net"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /charts-grid -->
+
+  <!-- ── Section 2: Metric Cards ──────────────────────────────────── -->
+  <div class="section-header">
+    <span class="section-icon">📊</span>
+    <span class="section-title">System Metrics</span>
+  </div>
+
+  <div class="metrics-grid">
+
+    <!-- CPU -->
+    <div class="card metric-card">
+      <div class="metric-header">
+        <div class="metric-icon-label">
+          <span class="metric-icon">⚡</span> CPU
+        </div>
+        <span class="card-badge badge-ok" id="cpu-badge">OK</span>
+      </div>
+      <div class="metric-value" id="cpu-value">—<span class="metric-value-unit">%</span></div>
+      <div class="meter-track"><div class="meter-fill" id="cpu-bar" style="width:0%"></div></div>
+    </div>
+
+    <!-- Memory -->
+    <div class="card metric-card">
+      <div class="metric-header">
+        <div class="metric-icon-label">
+          <span class="metric-icon">🧠</span> RAM
+        </div>
+        <span class="card-badge badge-ok" id="mem-badge">OK</span>
+      </div>
+      <div class="metric-value" id="mem-value">—<span class="metric-value-unit">%</span></div>
+      <div class="meter-track"><div class="meter-fill" id="mem-bar" style="width:0%"></div></div>
+      <div class="metric-sub" id="mem-sub">— GB used</div>
+    </div>
+
+    <!-- Disk -->
+    <div class="card metric-card">
+      <div class="metric-header">
+        <div class="metric-icon-label">
+          <span class="metric-icon">💾</span> Disk
+        </div>
+        <span class="card-badge badge-ok" id="disk-badge">OK</span>
+      </div>
+      <div class="metric-value" id="disk-value">—<span class="metric-value-unit">%</span></div>
+      <div class="meter-track"><div class="meter-fill" id="disk-bar" style="width:0%"></div></div>
+    </div>
+
+    <!-- Net In -->
+    <div class="card metric-card">
+      <div class="metric-header">
+        <div class="metric-icon-label">
+          <span class="metric-icon">⬇</span> Net In
+        </div>
+        <span class="card-badge badge-ok" id="netin-badge">OK</span>
+      </div>
+      <div class="metric-value color-cyan" id="netin-value">—<span class="metric-value-unit" style="font-size:12px"> MB/s</span></div>
+      <div class="meter-track"><div class="meter-fill" id="netin-bar" style="width:0%; background:var(--cyan)"></div></div>
+      <div class="metric-sub" id="netin-sub">—</div>
+    </div>
+
+    <!-- Net Out -->
+    <div class="card metric-card">
+      <div class="metric-header">
+        <div class="metric-icon-label">
+          <span class="metric-icon">⬆</span> Net Out
+        </div>
+        <span class="card-badge badge-ok" id="netout-badge">OK</span>
+      </div>
+      <div class="metric-value" style="color:var(--purple)" id="netout-value">—<span class="metric-value-unit" style="font-size:12px"> MB/s</span></div>
+      <div class="meter-track"><div class="meter-fill" id="netout-bar" style="width:0%; background:var(--purple)"></div></div>
+      <div class="metric-sub" id="netout-sub">—</div>
+    </div>
+
+  </div><!-- /metrics-grid -->
+
+  <!-- ── Sections 3, 4, 5, 6 — Bottom Grid ─────────────────────── -->
+  <div class="bottom-grid">
+
+    <!-- ── Section 3: Incident Management ─── -->
+    <div class="card incident-card">
+      <div class="card-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:13px">🚨</span>
+          <span class="card-title">Incident Management</span>
+        </div>
+        <span class="card-badge badge-none" id="incident-badge">NONE</span>
+      </div>
+
+      <div class="health-gauge-row">
+        <div class="gauge-wrap">
+          <svg viewBox="0 0 70 70" width="70" height="70">
+            <circle class="gauge-circle-bg" cx="35" cy="35" r="28"/>
+            <circle class="gauge-circle-fill" id="gauge-fill" cx="35" cy="35" r="28"
+                    stroke-dasharray="175.9 175.9" stroke-dashoffset="0"/>
+          </svg>
+          <div class="gauge-text-wrap">
+            <span class="gauge-number" id="gauge-number">—</span>
+            <span class="gauge-label">Health</span>
+          </div>
+        </div>
+        <div class="health-meta">
+          <div class="health-label color-ok" id="health-label">Initialising…</div>
+          <div class="health-sub">Health score / 100</div>
+        </div>
+      </div>
+
+      <ul class="incident-timeline" id="incident-list">
+        <li class="incident-item">
+          <span class="incident-dot dot-ok"></span>
+          <span class="incident-time">—</span>
+          <span class="incident-msg">Waiting for metrics…</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ── Section 4: Service Monitoring ─── -->
+    <div class="card">
+      <div class="card-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:13px">⚙️</span>
+          <span class="card-title">Service Status</span>
+        </div>
+        <span class="card-badge badge-ok">MONITORING</span>
+      </div>
+      <div class="services-grid" id="services-grid">
+        <!-- populated by JS -->
+        <div class="service-tile">
+          <span class="svc-led led-unknown"></span>
+          <div class="svc-info">
+            <div class="svc-name">Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 5 + 6: Network + Insights stacked ─── -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+      <!-- Network -->
+      <div class="card" style="flex:1">
+        <div class="card-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px">🌐</span>
+            <span class="card-title">Network Traffic</span>
+          </div>
+          <span class="card-badge badge-ok" id="net-conns-badge">LIVE</span>
+        </div>
+        <div class="network-body">
+          <div class="net-metric-row">
+            <span class="net-label" style="color:var(--cyan)">↓ Inbound</span>
+            <div class="net-bar-track">
+              <div class="net-bar-fill" id="net-in-bar" style="width:0%; background:var(--cyan)"></div>
+            </div>
+            <span class="net-value color-cyan" id="net-in-val">—</span>
+          </div>
+          <div class="net-metric-row">
+            <span class="net-label" style="color:var(--purple)">↑ Outbound</span>
+            <div class="net-bar-track">
+              <div class="net-bar-fill" id="net-out-bar" style="width:0%; background:var(--purple)"></div>
+            </div>
+            <span class="net-value" style="color:var(--purple)" id="net-out-val">—</span>
+          </div>
+
+          <div class="net-stats-grid">
+            <div class="net-stat-item">
+              <span class="net-stat-label">Active Conns</span>
+              <span class="net-stat-value" id="net-connections">—</span>
+            </div>
+            <div class="net-stat-item">
+              <span class="net-stat-label">Packet Rate</span>
+              <span class="net-stat-value" id="net-packets">—</span>
+            </div>
+            <div class="net-stat-item">
+              <span class="net-stat-label">Total Received</span>
+              <span class="net-stat-value" id="net-bytes-recv">—</span>
+            </div>
+            <div class="net-stat-item">
+              <span class="net-stat-label">Total Sent</span>
+              <span class="net-stat-value" id="net-bytes-sent">—</span>
+            </div>
+            <div class="net-stat-item">
+              <span class="net-stat-label">Errors</span>
+              <span class="net-stat-value" id="net-errors">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Insights -->
+      <div class="card" style="flex:1">
+        <div class="card-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px">🔬</span>
+            <span class="card-title">System Insights</span>
+          </div>
+        </div>
+        <div class="insights-body">
+          <div class="insight-row">
+            <div class="insight-label">
+              <span class="insight-icon">📈</span> Load Average
+            </div>
+            <span class="insight-value" id="sys-load">—</span>
+          </div>
+          <div class="insight-row">
+            <div class="insight-label">
+              <span class="insight-icon">🔄</span> Processes
+            </div>
+            <span class="insight-value" id="sys-procs">—</span>
+          </div>
+          <div class="insight-row">
+            <div class="insight-label">
+              <span class="insight-icon">💱</span> Swap Usage
+            </div>
+            <span class="insight-value" id="sys-swap">—</span>
+          </div>
+          <div class="insight-row">
+            <div class="insight-label">
+              <span class="insight-icon">🌡️</span> Temperature
+            </div>
+            <span class="insight-value" id="sys-temp">—</span>
+          </div>
+          <div class="insight-row">
+            <div class="insight-label">
+              <span class="insight-icon">⏱️</span> Uptime
+            </div>
+            <span class="insight-value" id="sys-uptime">—</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /stacked -->
+  </div><!-- /bottom-grid -->
+
+  <!-- ── Section 7: Alert Panel ────────────────────────────────── -->
+  <div class="alerts-section">
+    <div class="section-header">
+      <span class="section-icon">🔔</span>
+      <span class="section-title">Alert Stream</span>
+    </div>
+    <div class="card">
+      <div id="alerts-body" class="alerts-body">
+        <div class="no-alerts">Initialising alert engine…</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+</body>
+</html>
