@@ -402,13 +402,7 @@ This project is licensed under the MIT License.
 
 # 👨‍💻 Author
 
-**Vanshaj Rawat**
-
-📧 [studios.pixelnest@gmail.com](mailto:studios.pixelnest@gmail.com)
-
-📧 [vanshajrawat698@gmail.com](mailto:vanshajrawat698@gmail.com)
-
-🔗 GitHub: https://github.com/VANSHAJ-CLOUD-ENGINEERING-GIT
+**Vaibhav Rawat**
 
 ---
 
